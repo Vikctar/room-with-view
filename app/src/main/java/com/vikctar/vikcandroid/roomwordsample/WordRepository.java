@@ -22,7 +22,7 @@ public class WordRepository {
         return mAllWords;
     }
 
-    public void insert (Word word) {
+    public void insert(Word word) {
         new insertAsyncTask(mWordDao).execute(word);
     }
 
