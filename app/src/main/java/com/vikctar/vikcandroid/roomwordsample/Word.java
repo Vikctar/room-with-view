@@ -16,11 +16,20 @@ public class Word {
     private String word;
 
     public Word(@NonNull String word) {
+        this.setId(id);
         this.word = word;
     }
 
     @NonNull
     public String getWord() {
         return word;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
