@@ -1,10 +1,16 @@
 package com.vikctar.vikcandroid.roomwordsample;
 
 import android.content.Context;
+import android.os.AsyncTask;
 
+import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Database(entities = {Word.class}, version = 1)
 public abstract class WordRoomDatabase extends RoomDatabase {
@@ -17,10 +23,44 @@ public abstract class WordRoomDatabase extends RoomDatabase {
             synchronized (WordRoomDatabase.class) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
-                            WordRoomDatabase.class, "word_database").build();
+                            WordRoomDatabase.class, "word_database")
+                            .addCallback(sRoomDatabaseCallback)
+                            .build();
                 }
             }
         }
         return INSTANCE;
+    }
+
+    private static RoomDatabase.Callback sRoomDatabaseCallback =
+            new RoomDatabase.Callback() {
+                @Override
+                public void onOpen(@NonNull SupportSQLiteDatabase db) {
+                    super.onOpen(db);
+                    new PopulateDbAsync(INSTANCE).execute();
+                }
+            };
+
+    private static class PopulateDbAsync extends AsyncTask<Void, Void, Void> {
+
+        private final WordDao mDao;
+
+        PopulateDbAsync(WordRoomDatabase database) {
+            mDao = database.wordDao();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            mDao.deleteAll();
+            List<Word> words = new ArrayList<>();
+            Word word = new Word("Hello");
+            words.add(word);
+            words.add(new Word("World"));
+            for (Word w :
+                    words) {
+                mDao.insert(w);
+            }
+            return null;
+        }
     }
 }
