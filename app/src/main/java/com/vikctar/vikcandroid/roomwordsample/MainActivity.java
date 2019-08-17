@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // get a ViewModel from the ViewModelProvider
+        // Get a new or existing ViewModel from the ViewModelProvider
         mWordViewModel = ViewModelProviders.of(this).get(WordViewModel.class);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerview);
@@ -46,7 +46,9 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // add an observer for the LiveData returned by getAllWords()
+        // Add an observer for the LiveData returned by getAllWords()
+        // The onChanged() method fires when the observed data changes and the activity is
+        // in the foreground.
         mWordViewModel.getAllWords().observe(this, new Observer<List<Word>>() {
             @Override
             public void onChanged(List<Word> words) {

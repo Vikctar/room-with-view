@@ -12,10 +12,15 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This is the backend. The database. This used to be done by the OpenHelper.
+ * The fact that this has very few comments emphasizes its coolness.
+ */
 @Database(entities = {Word.class}, version = 1)
 public abstract class WordRoomDatabase extends RoomDatabase {
     public abstract WordDao wordDao();
 
+    // marking the instance as volatile to ensure atomic access to the variable
     private static volatile WordRoomDatabase INSTANCE;
 
     static WordRoomDatabase getDatabase(final Context context) {
@@ -24,6 +29,10 @@ public abstract class WordRoomDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             WordRoomDatabase.class, "word_database")
+
+                            // Wipes and rebuilds instead of migrating if no Migration object.
+                            // Migration is not part of this codelab.
+                            .fallbackToDestructiveMigration()
                             .addCallback(sRoomDatabaseCallback)
                             .build();
                 }
@@ -32,6 +41,14 @@ public abstract class WordRoomDatabase extends RoomDatabase {
         return INSTANCE;
     }
 
+
+    /**
+     * Override the onOpen method to populate the database.
+     * For this sample, we clear the database every time it is created or opened.
+     * <p>
+     * If you want to populate the database only when the database is created for the 1st time,
+     * override RoomDatabase.Callback()#onCreate
+     */
     private static RoomDatabase.Callback sRoomDatabaseCallback =
             new RoomDatabase.Callback() {
                 @Override
@@ -51,6 +68,8 @@ public abstract class WordRoomDatabase extends RoomDatabase {
 
         @Override
         protected Void doInBackground(Void... voids) {
+            // Start the app with a clean database every time.
+            // Not needed if you only populate on creation.
             mDao.deleteAll();
             List<Word> words = new ArrayList<>();
             Word word = new Word("Hello");
